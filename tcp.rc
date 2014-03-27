@@ -1,0 +1,65 @@
+cpm128 192.168.3.70 192.168.3.1 192.168.3.1
+################################################
+
+             Notes about this file
+
+################################################
+
+Any text can be in the lines after the first line.
+Only the very first line of this file is read in and used.
+Therefore, here it the layout of the first line in this file.
+
+hostname<SPACE>host IP<SPACE>DNS IP<SPACE>gateway IP<NEWLINE>
+
+The first parameter is the actual NAME you wish to call the system running
+the IP stack. In my current case, since testing is done primarily under
+CP/M 3.1 on the C=128, I chose the name of "cpm128".
+You may change this to whatever you wish, but the length limit is 39 characters.
+
+The second parameter is the IP address in standard notation of the system
+running the IP stack.
+
+The third parameter is the address of your DNS server. This may be provided by
+a Linux box within your LAN, or may be your ISP's DNS. If unsure use 8.8.8.8
+which is Google, and be sure that you forward the packets.
+
+The fourth parameter is not used for slip connections, instead this is used for
+hardware network adaptors such as Arcnet, token ring, Ethernet, etc.
+For SLIP, you may enter anything you wish, or leave it as is, since it does
+not matter and is unused.
+
+On systems that have directory capabilities, the file needs to be in the etc
+directory on your primary disk root directory.
+Examples:
+DOS
+A:\etc\tcp.rc
+Linux, or any other system that uses intelligent mount points
+/etc/tcp.rc
+
+For systems lacking directories (like CP/M) the file needs to be located on
+your first drive.
+
+
+
+      _______
+     /\__|__/\
+    / /\ | /\ \
+   / / /\|/\ \ \
+   |-----v-----|
+   \ \ \/|\/ / /
+    \ \/_|_\/ /
+     \/__|__\/
+         |
+         |
+       \ | /
+        \|/
+       \/#\/
+        /"\
+       //^\\
+        \ /
+
+      .-. .-.
+      |:\V/:|
+       \-O-/
+        /"\
+
