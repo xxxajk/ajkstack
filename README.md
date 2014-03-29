@@ -6,7 +6,7 @@ IP stack with TCP and UDP protocols for Arduino
 Hardware Requirements:<BR>
 Arduino Mega, Mega 2560 or Teensy++ 2.0 from www.PJRC.com<BR>
 USB host Shield from www.circuitsathome.com<BR>
-Minimum of 128K external memory-- Rugged circuits, or Andy Brown, or compatable.<BR>
+Minimum of 128K external memory-- Rugged circuits, or Andy Brown, or compatible.<BR>
 TTL USB to Serial adapter for terminal I/O to the AVR on Serial 1<BR>
 Fat 32 formatted thumb drive or other USB storage device<BR>
 <BR>
