@@ -71,8 +71,9 @@
 /* set to 1 if your tight on ram, to make applications buffers smaller */
 #define TIGHTRAM 0
 
-#define MY_BAUD_RATE 115200
-
+#ifndef MY_BAUD_RATE
+#define MY_BAUD_RATE 9600
+#endif
 
 /* (UNIX | OS/M | MP/M | CP/M 3.x | __MSDOS__  | Arduino) */
 #define HAVE_RTC 1

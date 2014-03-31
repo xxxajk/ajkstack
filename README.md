@@ -34,7 +34,7 @@ Quick how-to -- connect with SLIP interface on Linux:<BR>
 1: The commands below need either login as root, su, or use sudo in two different sessions.<BR>
 2: Choose 2 IPs on a subnet NOT on your LAN. My LAN uses the 192.168.123.0 subnet, so I use 192.168.3.X for SLIP.<BR>
 3: In terminal 1<BR>
-slattach -d -p slip -s 115200 /dev/ttyACM0<BR>
+slattach -d -p slip -s 9600 /dev/ttyACM0<BR>
 4: In terminal 2<BR>
 ifconfig sl0 192.168.3.73 pointopoint 192.168.3.74 up mtu 554<BR>
 <BR>
