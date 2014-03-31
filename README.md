@@ -24,7 +24,7 @@ Additional Requirements:<BR>
 Linux with SLIP<BR>
 <BR>
 Setup:<BR>
-1: Format the tumb drive with fat32 and do NOT set the label so that it may mount as the root drive.<BR>
+1: Format the thumb drive with fat32 and do NOT set the label so that it may mount as the root drive.<BR>
 2: On the thumb drive, make a directory named etc<BR>
 3: Place a copy of the tcp.rc file in the etc directory.<BR>
 You will also possibly have to edit the tcp.rc file.<BR>
