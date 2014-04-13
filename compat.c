@@ -68,23 +68,18 @@ char *programname;
 char *syntax;
 {
 
-        /* Because HI-TECH C can't do argv[0]!!! */
-#ifdef HI_TECH_C
-#ifdef CPM
-#ifdef z80
+#if NO_OS
         printf("\n%s, Version %s\nStack Version %s\n\n", Fprgogname, version, STACKVERSION);
         printf("Syntax:\n%s %s\n\n", Fprgogname, syntax);
-#endif
-#endif
 #else
-#ifdef AVR
+#ifdef CPM
         printf("\n%s, Version %s\nStack Version %s\n\n", Fprgogname, version, STACKVERSION);
         printf("Syntax:\n%s %s\n\n", Fprgogname, syntax);
 #else
         printf("\n%s, Version %s\nStack Version %s\n\n", programname, version, STACKVERSION);
         printf("Syntax:\n%s %s\n\n", programname, syntax);
-
 #endif
+        exit(1);
 #endif
 }
 

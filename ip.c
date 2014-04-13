@@ -377,8 +377,11 @@ void readhostip(VOIDFIX) {
         sscanf(inputbuf, "%s %i.%i.%i.%i %i.%i.%i.%i %i.%i.%i.%i", hostname, &xipb, &xipc, &xipd, &xipe, &dipa, &dipb, &dipc, &dipd, &gatea, &gateb, &gatec, &gated);
         if(xipa < 9 || dipd == -1 || xipe == -1 || !hostname[0]) {
                 printf("ERROR: Missing data in configfile `%s`.\n%i\n", rcfile, xipa);
+#ifdef ARDUINO
                 for(;;);
+#else
                 exit(3);
+#endif
         }
         FREE(inputbuf);
         close(fd);

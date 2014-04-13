@@ -1,9 +1,6 @@
 /* (C) 2001-2014 Andrew J. Kroll
  *  see file README for license details
  *
- *      Configure your i/o method here, add in how your system works
- *      Comment out any that do not apply.
- *
  *      TO-DO:
  *              * Don't use defines for buffer sizes,
  *                instead make them dynamic and check the limits.
@@ -11,117 +8,111 @@
 
 #ifndef CONFIG_H_SEEN
 #define CONFIG_H_SEEN
+#include "cpu.h"
+
 /*
---- Select ARCH dependencies here ------------------------------------------------------------------
+ * set to 0 to disable fragment handling, only if you really need to.
+ * set to 1 to enable inbound fragment handling
  */
-
-#ifdef __MSDOS__
-#define CPU "IA86 or compatable"
-#endif
-#ifdef __i386__
-#define CPU "IA86 or compatable"
-#endif
-#ifdef __AS386_16__
-#define CPU "IA86 or compatable"
-#endif
-#ifdef __AS386_32__
-#define CPU "IA86 or compatable"
+#ifndef HANDLEFRAGS
+#define HANDLEFRAGS 1
 #endif
 
-#ifdef Z80
-#define CPU "Z80"
+#ifndef LOWBUFFERS
+/* if no frags, this gets used. minimum of 3, maximum 255 */
+#define LOWBUFFERS 3
+#endif
+#ifndef HIGHBUFFERS
+/* otherwise this setting will be used. minimum of 6, maximum 255 */
+#define HIGHBUFFERS 8
 #endif
 
-#ifdef CPM
-#define OS "CP/M"
-#endif
-
-#ifdef linux
-#define OS "Linux"
-#endif
-
-#ifdef __MSDOS__
-#define OS "DOS"
-#endif
-
-#ifdef ARDUINO
-#include <Arduino.h>
-#if __AVR__
-
-#define CPU _AVR_CPU_NAME_
-#endif
-#ifdef CORE_TEENSY
-/* steal stk500v2 names */
-#include <../bootloaders/stk500v2/avr_cpunames.h>
-#define OS "Teensyduino no OS"
+/* WIRE PROTOCOLS */
+#ifndef USEARCNET
+#define USEARCNET 0
 #else
-#include <../../bootloaders/stk500v2/avr_cpunames.h>
-#define OS "Arduino no OS"
-#endif
+#define USESIMPLESLIP 0
 #endif
 
-#ifndef CPU
-#define CPU "Unknown CPU"
+/* Default wire protocol */
+#ifndef USESIMPLESLIP
+#define USESIMPLESLIP 1
 #endif
-
-#ifndef OS
-#define OS "Unknown OS"
-#endif
-
-/* set to 1 if your tight on ram, to make applications buffers smaller */
-#define TIGHTRAM 0
 
 #ifndef MY_BAUD_RATE
 #define MY_BAUD_RATE 9600
 #endif
 
 /* (UNIX | OS/M | MP/M | CP/M 3.x | __MSDOS__  | Arduino) */
-#define HAVE_RTC 1
+#ifndef HAVE_RTC
+#define HAVE_RTC 0
+#endif
 
 /* Arduino C++ interface */
-#define USEARDUINO 1
+#ifndef USEARDUINO
+#define USEARDUINO 0
+#endif
 
 /* (OS/M | MP/M | CP/M 2.x | CP/M 3.x) on Z80DART */
+#ifndef USEZ80DART
 #define USEZ80DART 0
+#endif
 
 /* CP/M3 (CP/M+) AUX: device */
+#ifndef USECPM3AUX
 #define USECPM3AUX 0
+#endif
 
 /* Linux on ttyS */
+#ifndef USELINUXTTYS
 #define USELINUXTTYS 0
+#endif
 
+#ifndef USEELKSTTYS
 /* ELKS on ttyS */
 #define USEELKSTTYS 0
+#endif
 
+#ifndef SEDOSUART
 /* MS-DOS on 8250 */
 #define USEDOSUART 0
+#endif
 
+#ifndef USEZ80SIO
 /* Xerox 820 and BigBoard I */
 #define USEZ80SIO 0
+#endif
+#ifndef USECOM8116
+/* Xerox 820 and BigBoard I */
 #define USECOM8116 0
+#endif
 
+#ifndef USESILVER
 /* c128 cpm and "silver surfer" */
 #define USESILVER 0
+#endif
 
+#ifndef USEACIA
 /* c128 with fixed ACIA and cp/m */
 #define USEACIA 0
+#endif
 
 /*
---- Select stack dependencies here ----------------------------------------------------------------
+ * This is set to 1 to make some buffers smaller
+ * and to eliminate some application functionality
  */
+#ifndef TIGHTRAM
+#define TIGHTRAM 0
+#endif
 
-/* socket settings */
-#define MAXBACKLOG 3
+/*
+--- stack ----------------------------------------------------------------
+ */
 
 /* Standard packet size of 1500 eats shit loads of ram.
  * 514 is minimum for UDP DNS packets, and we can't fragment IP yet.
  * Add 40 for the header information... */
 #define MAXMTUMRU (514 + 40)
-
-/* set to 0 to disable fragment handling, only if you really need to.
- * set to 1 to enable inbound fragment handling
- */
-#define HANDLEFRAGS 1
 
 /* max write buffer size, 384 is 3 cp/m sectors,
  * If you can, use at least MAXMTUMRU, more is better, of course.
@@ -140,71 +131,16 @@
  */
 #define MAXTAILR (MAXMTUMRU * 3)
 
-/* WIRE PROTOCOLS */
-#define USESIMPLESLIP 1
-#define USEARCNET 0
-
 /* Network protocols */
 #define IP_ENABLED 1
 #define TCP_ENABLED 1
 #define UDP_ENABLED 1
 #define ICMP_ENABLED 1
 
-/* if no frags, this gets used. minimum of 3, maximum 255 */
-#define LOWBUFFERS 3
-/* otherwise this setting will be used. minimum of 6, maximum 255 */
-#define HIGHBUFFERS 8
-
 /* How many bytes in flight? 0 - MAXTAILW, 0 == disable */
 #define WINDOWED MAXTAILW
 
-/*
---- Nothing below here should need to be altered. --------------------------------------------------
- */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* fixups for GCC, and probably other compilers. */
+/* fixups for GCC, and other compilers. */
 #include "unproto.h"
 
 #ifdef M5
@@ -237,10 +173,10 @@
 #define BUFFERS LOWBUFFERS
 #endif /* HANDLEFRAGS */
 
-#define DEBUG 0
-
-#define DEBUGSLIP 0
-
+/* socket setting, how many listening slots to use */
+#ifndef MAXBACKLOG
+#define MAXBACKLOG (BUFFERS/2)
+#endif
 
 /* baud rates, hardware and timer specifics */
 #include "hrdware.h"

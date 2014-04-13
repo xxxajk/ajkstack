@@ -12,15 +12,23 @@
 #ifndef CONFIG_H_SEEN
 #include "config.h"
 #endif
+
+#if NO_OS
 #include "ardser.h"
+#else
 #include "z80dart.h"
 #include "cpm3aux.h"
-#include "slip.h"
 #include "linuxser.h"
 #include "elksser.h"
 #include "dosuart.h"
 #include "z80sio.h"
 #include "silver.h"
-#include "arcnet.h"
 #include "c128acia.h"
+#endif
+#if USESIMPLESLIP
+#include "slip.h"
+#endif
+#if USEARCNET
+#include "arcnet.h"
+#endif
 #endif /* IOCONFIG_H_SEEN */

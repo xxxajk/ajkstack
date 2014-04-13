@@ -10,6 +10,7 @@
 #endif
 
 #if USESIMPLESLIP
+#define DEBUGSLIP 0
 extern void sliptxone K__P F__P(unsigned int c)P__F;
 extern int sliprxone K__P F__P(void)P__F;
 extern void sliptx K__P F__P(int bufnum)P__F;

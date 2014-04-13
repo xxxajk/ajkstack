@@ -35,7 +35,7 @@ unsigned int xlen;
         register unsigned int zipper;
         register unsigned long sum;
         register unsigned char *bufptr;
-        sum = 0;
+        sum = 0LU;
         if(xlen) {
                 bufptr = xbuffer;
                 for(zipper = (xlen / 2); zipper > 0; zipper--) {
