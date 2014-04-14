@@ -28,7 +28,7 @@ extern unsigned char mydns[4];
 
 struct u_nameip {
         char * hostname;
-        char * hostip;
+        unsigned char * hostip;
 };
 
 extern struct u_nameip * findhost K__P F__P(const char *, unsigned char)P__F;

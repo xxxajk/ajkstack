@@ -91,7 +91,7 @@ unsigned char qtype;
         struct u_nameip *result = NULL;
         unsigned char *workspace = NULL; // Used to hold datagrams.
         unsigned char *ipp;
-        unsigned char *hostp;
+        char *hostp;
         MAKEMEBLEED();
 
         if(!hostinfo) goto no_workspace;
@@ -199,7 +199,7 @@ unsigned char qtype;
                                                 // Compression is being used.
                                                 p += 10;
                                         } else {
-                                                while(*p & *p < 64) p++;
+                                                while(*p && (*p < 64)) p++;
                                                 p += 10;
                                         }
                                         // p now points at the data length
@@ -217,7 +217,7 @@ unsigned char qtype;
                                                 }
                                                 if(qtype == 0x0c || qtype == 0x0f) {
                                                         // give name
-                                                        ptr = hostp;
+                                                        ptr = (unsigned char *)hostp;
                                                         if(qtype == 0x0f) {
                                                                 // skip preference
                                                                 p += 2;
@@ -232,14 +232,14 @@ unsigned char qtype;
                                                                 }
                                                         }
                                                         *ptr = 0x00;
-                                                        p = hostp;
+                                                        p = (unsigned char *)hostp;
 
                                                         while(*p) {
                                                                 mov = 1 + *p;
                                                                 *p = '.';
                                                                 p += mov;
                                                         }
-                                                        p = hostp;
+                                                        p = (unsigned char *)hostp;
                                                         while(*p) {
                                                                 *p = *(p + 1);
                                                                 p++;
@@ -282,7 +282,7 @@ no_workspace:
 struct u_nameip *gethostandip(hostinfo)
 const char *hostinfo;
 {
-        char *ptr = hostinfo;
+        char *ptr = (char *)hostinfo;
         int dots = 0;
         int letters = 0;
         int a = -1;
@@ -302,7 +302,7 @@ const char *hostinfo;
                         }
                         ptr++;
                 }
-                ptr = hostinfo;
+                ptr = (char *)hostinfo;
                 if(letters == 0 && dots == 3) {
                         // check that all 4 numbers are <255
                         sscanf(hostinfo, "%d.%d.%d.%d", &a, &b, &c, &d);
@@ -325,7 +325,7 @@ const char *hostinfo;
                 }
                 if(result) {
                         if(qtype == 0x0c) {
-                                ptr=result->hostip;
+                                ptr=(char *)result->hostip;
                                 // fill in what we know
                                 *ptr++ = a;
                                 *ptr++ = b;

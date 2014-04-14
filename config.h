@@ -159,9 +159,11 @@
 #if !USEELKSTTYS
 #ifndef M5
 #ifndef ARDUINO
+#ifndef linux
 #include <asm/io.h>
 #define inp     inb
 #define outp    outb
+#endif /* linux */
 #endif /* ARDUINO */
 #endif /* M5 */
 #endif /* !USEELKSTTYS */
