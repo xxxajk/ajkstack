@@ -53,14 +53,14 @@ char *argv[];
 		exit(-1);
 	}
 	srv_addy.sin_port = 7; /* echo port */
-	sock = socket(AF_INET, SOCK_STREAM, 0);
-	dotcount = bind(sock, (struct sockaddr_in *)&srv_addy, sizeof(srv_addy));
+	sock = AJK_socket(AF_INET, SOCK_STREAM, 0);
+	dotcount = AJK_bind(sock, (struct sockaddr_in *)&srv_addy, sizeof(srv_addy));
 	if(dotcount < 0) {
 		printf("\nError on bind %i\n", dotcount);
 		return(-1);
 	}
 
-	dotcount = listen(sock, MAXSTREAMS);
+	dotcount = AJK_listen(sock, MAXSTREAMS);
 	if(dotcount < 1) {
 		 printf("\nError on listen %i\n", dotcount);
 		 return(-1);
@@ -90,14 +90,14 @@ char *argv[];
 			putchar('.');
 			fflush(stdout);
 		}
-		now = bindcount(sock);
+		now = AJK_bindcount(sock);
 		if(now < 0) {
 			printf("bindcount() Error %i\n", now);
 			exit(now);
 		}
 		if( now != avail) printf("\n%i sockets available on socket %i.\n", now, sock);
 		avail = now;
-		now = acceptready(sock);
+		now = AJK_acceptready(sock);
 		if(now < 0) {
 			printf("Acceptready() error %i\n", now);
 			exit(now);
@@ -109,7 +109,7 @@ char *argv[];
 				if(stream[i] == -1) break;
 				i++;
 			}
-			stream[i] = accept(sock, (struct sockaddr_in *)&srv_addy, &j);
+			stream[i] = AJK_accept(sock, (struct sockaddr_in *)&srv_addy, &j);
 			if(stream[i] < 1) {
 				printf("Accept nonfatal error %i\n", stream[i]);
 				stream[i] = -1;
@@ -121,18 +121,18 @@ char *argv[];
 		/* test each stream for data and echo it back */
 		for(i = 0; i < MAXSTREAMS; i++) {
 			if(stream[i] > 0) {
-				j = sockread(stream[i], info, 256);
+				j = AJK_sockread(stream[i], info, 256);
 				if(j < 0) {
 					printf("Socket %i closed (read)\n", i);
-					sockclose(stream[i]);
+					AJK_sockclose(stream[i]);
 					stream[i] = -1;
 				} else {
 					now = 0;
 					while(now < j) {
-						k = sockwrite(stream[i], info + now, j - now);
+						k = AJK_sockwrite(stream[i], info + now, j - now);
 						if(k < 0) {
 							printf("Socket %i closed (write)\n", i);
-							sockclose(stream[i]);
+							AJK_sockclose(stream[i]);
 							stream[i] = -1;
 							now = j + 1;
 						} else {
@@ -158,5 +158,6 @@ char *argv[];
 
 /* tell link parser who we are and where we belong
 
+0000 daemon.com daemon.obj xxPROGRAMxx
 
 */

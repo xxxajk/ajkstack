@@ -45,7 +45,7 @@ char *argv[];
 	initnetwork(argc, argv);
 
 	/*
-	Unfortunately there is no alarm(); on some p[latforms (CP/M)
+	Unfortunately there is no alarm(); on some platforms (CP/M)
 	so we must basically make a simulation of it by sprinkling
 	IO and transport calls arround :-(
 	*/
@@ -53,7 +53,7 @@ char *argv[];
 	for(;;) {
 		 /* this should be sprinkled througout the app code
 		 especially after a time consuming loop for icmp latency */
-		MAKEMEBLEED
+		MAKEMEBLEED();
 		dotcount++;
 		/* one dot / sec timer test, it's not accurate :-) */
 		if(dotcount == TIMETICK) {
@@ -75,5 +75,6 @@ char *argv[];
 
 /* tell link parser who we are and where we belong
 
+0000 cpmicmp.com cpmicmp.obj xxPROGRAMxx
 
 */
