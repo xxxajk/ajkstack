@@ -49,6 +49,8 @@
 #define CPU "PIC24H"
 #endif
 #define OS "No OS"
+#define USE_PICxxxx_CDC 1
+#include <CDC.h>
 #endif
 
 /*****************************************************************************/

@@ -10,6 +10,32 @@
 #define CONFIG_H_SEEN
 #include "cpu.h"
 
+
+#if !HAS_STORAGE
+/*
+ * Static definitions if you lack file storage.
+ *
+ * NOTE: If you lack file storage, any demo that uses disk becomes unusable.
+ *
+ */
+#define MY_HOSTNAME "arduino"
+
+#define MY_IPA 192
+#define MY_IPB 168
+#define MY_IPC 3
+#define MY_IPD 74
+
+#define MY_DNSA 192
+#define MY_DNSB 168
+#define MY_DNSC 123
+#define MY_DNSD 254
+
+#define MY_GATEA 192
+#define MY_GATEB 168
+#define MY_GATEC 123
+#define MY_GATED 254
+#endif
+
 /*
  * set to 0 to disable fragment handling, only if you really need to.
  * set to 1 to enable inbound fragment handling
@@ -46,6 +72,10 @@
 /* (UNIX | OS/M | MP/M | CP/M 3.x | __MSDOS__  | Arduino) */
 #ifndef HAVE_RTC
 #define HAVE_RTC 0
+#endif
+
+#ifndef USE_PICxxxx_CDC
+#define USE_PICxxxx_CDC 0
 #endif
 
 /* Arduino C++ interface */
@@ -156,6 +186,8 @@
 #define volatile
 #define const
 #else /* HI_TECH_C */
+#if 0
+/* These don't matter any more... */
 #if !USEELKSTTYS
 #ifndef M5
 #ifndef ARDUINO
@@ -167,6 +199,7 @@
 #endif /* ARDUINO */
 #endif /* M5 */
 #endif /* !USEELKSTTYS */
+#endif
 #endif /* HI_TECH_C */
 
 #if HANDLEFRAGS

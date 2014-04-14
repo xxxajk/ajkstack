@@ -38,10 +38,12 @@
 #ifdef HI_TECH_C
 #include <unixio.h>
 #else
+#ifndef __XC16_VERSION__
 #include <fcntl.h>
 #ifndef ARDUINO
 #ifndef M5
 #include <unistd.h>
+#endif
 #endif
 #endif
 #endif
@@ -359,6 +361,7 @@ unsigned int bufnum;
 char rcfile[] = CONFIGFILE;
 
 void readhostip(VOIDFIX) {
+#if HAS_STORAGE
         register char *inputbuf;
         register int fd;
         int xipa, xipb, xipc, xipd, xipe, dipa, dipb, dipc, dipd, gatea, gateb, gatec, gated;
@@ -377,7 +380,7 @@ void readhostip(VOIDFIX) {
         sscanf(inputbuf, "%s %i.%i.%i.%i %i.%i.%i.%i %i.%i.%i.%i", hostname, &xipb, &xipc, &xipd, &xipe, &dipa, &dipb, &dipc, &dipd, &gatea, &gateb, &gatec, &gated);
         if(xipa < 9 || dipd == -1 || xipe == -1 || !hostname[0]) {
                 printf("ERROR: Missing data in configfile `%s`.\n%i\n", rcfile, xipa);
-#ifdef ARDUINO
+#if NO_OS
                 for(;;);
 #else
                 exit(3);
@@ -397,6 +400,23 @@ void readhostip(VOIDFIX) {
         mygate[1] = gateb & 0xff;
         mygate[2] = gatec & 0xff;
         mygate[3] = gated & 0xff;
+#else
+        hostname[0] = 0x00;
+        strcat((char *)hostname, MY_HOSTNAME);
+        myip[0] = MY_IPA & 0xff;
+        myip[1] = MY_IPB & 0xff;
+        myip[2] = MY_IPC & 0xff;
+        myip[3] = MY_IPD & 0xff;
+        mydns[0] = MY_DNSA & 0xff;
+        mydns[1] = MY_DNSB & 0xff;
+        mydns[2] = MY_DNSC & 0xff;
+        mydns[3] = MY_DNSD & 0xff;
+        mygate[0] = MY_GATEA & 0xff;
+        mygate[1] = MY_GATEB & 0xff;
+        mygate[2] = MY_GATEC & 0xff;
+        mygate[3] = MY_GATED & 0xff;
+
+#endif
 }
 
 #if HANDLEFRAGS

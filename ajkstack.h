@@ -3,6 +3,8 @@
 
 #ifndef AJKSTACK_H
 #define	AJKSTACK_H
+#if USEARDUINO
+
 #include <ctype.h>
 #include <stddef.h>
 #include "compat.h"
@@ -49,5 +51,5 @@ extern int bindcount(int sockfd);
 extern void IP_task(void);
 
 #endif
-
+#endif
 #endif	/* AJKSTACK_H */
