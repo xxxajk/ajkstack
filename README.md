@@ -1,9 +1,22 @@
 ajkstack
 ========
 
-IP stack with TCP and UDP protocols for Arduino
+IP stack with TCP and UDP protocols for Arduino, or Linux. More soon.
 
-Hardware Requirements:<BR>
+<HR>
+Requirements for All platforms:<BR>
+Linux with SLIP<BR>
+<HR>
+Linux<BR>
+<BR>
+Linux Hardware Requirements:<BR>
+Serial port.<BR>
+To build for Linux ./linux.cfg && make<BR>
+
+<HR>
+Arduino<BR>
+
+Arduino Hardware Requirements:<BR>
 Arduino Mega, Mega 2560 or Teensy++ 2.0 from www.PJRC.com<BR>
 USB host Shield from www.circuitsathome.com<BR>
 Minimum of 128K external memory-- Rugged circuits, or Andy Brown, or compatible.<BR>
@@ -20,16 +33,15 @@ https://github.com/xxxajk/RTClib<BR>
 https://github.com/xxxajk/xmemUSB<BR>
 https://github.com/xxxajk/xmemUSBFS<BR>
 
-Additional Requirements:<BR>
-Linux with SLIP<BR>
 <BR>
-Setup:<BR>
+Arduino Setup:<BR>
 1: Format the thumb drive with fat32 and do NOT set the label so that it may mount as the root drive.<BR>
 2: On the thumb drive, make a directory named etc<BR>
 3: Place a copy of the tcp.rc file in the etc directory.<BR>
 You will also possibly have to edit the tcp.rc file.<BR>
 Settings details are within the tcp.rc file.<BR>
 <BR>
+<HR>
 Quick how-to -- connect with SLIP interface on Linux:<BR>
 1: The commands below need either login as root, su, or use sudo in two different sessions.<BR>
 2: Choose 2 IPs on a subnet NOT on your LAN. My LAN uses the 192.168.123.0 subnet, so I use 192.168.3.X for SLIP.<BR>
