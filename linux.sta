@@ -1,0 +1,11 @@
+CC = gcc
+AR = ar
+LD = gcc
+CFLAGS = -I. -g -O2 -Wall 
+LDFLAGS = -g
+
+all: stuff
+
+clean:
+	rm -f *~ *.obj *.BAK DEADJOE 
+
