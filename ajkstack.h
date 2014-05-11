@@ -3,6 +3,7 @@
 
 #ifndef AJKSTACK_H
 #define	AJKSTACK_H
+#include "config.h"
 #if USEARDUINO
 
 #include <ctype.h>

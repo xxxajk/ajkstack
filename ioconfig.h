@@ -16,6 +16,7 @@
 #if NO_OS
 #include "ardser.h"
 #include "PICxxCDC.h"
+#include "T3xEEM.h"
 #else
 #include "z80dart.h"
 #include "cpm3aux.h"

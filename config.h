@@ -10,8 +10,6 @@
 #define CONFIG_H_SEEN
 #include "cpu.h"
 
-
-#if !HAS_STORAGE
 /*
  * Static definitions if you lack file storage.
  *
@@ -34,7 +32,6 @@
 #define MY_GATEB 168
 #define MY_GATEC 123
 #define MY_GATED 254
-#endif
 
 /*
  * set to 0 to disable fragment handling, only if you really need to.
@@ -56,6 +53,12 @@
 /* WIRE PROTOCOLS */
 #ifndef USEARCNET
 #define USEARCNET 0
+#else
+#define USESIMPLESLIP 0
+#endif
+
+#ifndef USE_EEM
+#define USE_EEM 0
 #else
 #define USESIMPLESLIP 0
 #endif

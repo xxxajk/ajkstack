@@ -3,13 +3,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "config.h"
+#include "ajkstack.h"
 #include "tcpvars.h"
 #include "ioconfig.h"
 
 #if USEARDUINO
 #include <Arduino.h>
-#include "ajkstack.h"
 #include "ardser.h"
 #include <xmem.h>
 #include <xmemUSB.h>
@@ -372,7 +371,7 @@ extern "C" {
                 xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
                 rv = reply->rv;
                 if(!rv) {
-                        buf->hostip = (char *)xmem::safe_malloc(4);
+                        buf->hostip = (unsigned char *)xmem::safe_malloc(4);
                         buf->hostname = (char *)xmem::safe_malloc(1 + strlen((char *)reply->name));
                         memcpy(buf->hostip, &(reply->ip), 4);
                         strcpy((char *)buf->hostname, (char *)&(reply->name));

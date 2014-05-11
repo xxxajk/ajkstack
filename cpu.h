@@ -8,25 +8,51 @@
 
 #ifdef ARDUINO
 #include <Arduino.h>
-/* assumes we have RTC */
+/* Assumes we have some kind of RTC, but a fake one is available */
 #define HAVE_RTC 1
- /* assumes we have storage */
+ /* Assumes we have USB Mass Storage */
 #define HAS_STORAGE 1
 #define MY_BAUD_RATE 9600
-#define USEARDUINO 1
-#ifdef __AVR__
-#define CPU _AVR_CPU_NAME_
-/* else how to get CPU of others? */
-#endif
 #ifdef CORE_TEENSY
+#ifdef __arm__
+#define USE_EEM 1
+
+#ifdef __MK20DX256__
+#define CPU "ARM Cortex-M4"
+#define OS "Teensyduino 3.1 no OS"
+#endif
+#ifdef __MK20DX128__
+#define CPU "ARM Cortex-M4"
+#define OS "Teensyduino 3.0 no OS"
+#endif
+
+#ifndef OS
+#define CPU "ARM Cortex-M"
+#define OS "Teensyduino no OS"
+#endif
+
+#else
+#define USEARDUINO 1
 /* steal stk500v2 names */
 #include <../bootloaders/stk500v2/avr_cpunames.h>
+#define CPU _AVR_CPU_NAME_
 #define OS "Teensyduino no OS"
+#endif /* __arm__ */
+
 #else
+#define USEARDUINO 1
+#ifdef __arm__
+#define CPU "ARM"
+#define OS "Arduino no OS"
+#else
+/* steal stk500v2 names */
 #include <../../bootloaders/stk500v2/avr_cpunames.h>
+#define CPU _AVR_CPU_NAME_
 #define OS "Arduino no OS"
 #endif
-#endif
+#endif /* CORE_TEENSY */
+#endif /* ARDUINO */
+
 
 #ifdef __XC16_VERSION__
 /*
