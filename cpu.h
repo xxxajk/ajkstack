@@ -15,7 +15,9 @@
 #define MY_BAUD_RATE 9600
 #ifdef CORE_TEENSY
 #ifdef __arm__
-#define USE_EEM 1
+//#define USE_EEM 1
+// Used for now until EEM/ECM is written.
+#define USEARDUINO 1
 
 #ifdef __MK20DX256__
 #define CPU "ARM Cortex-M4"

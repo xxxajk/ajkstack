@@ -50,7 +50,13 @@ extern int bindcount(int sockfd);
 }
 // C++ only...
 extern void IP_task(void);
+#ifndef XMEM_MULTIPLE_APP
+uint8_t IP_ISR_PROTECTED_CALL_START();
+uint8_t IP_ISR_PROTECTED_CALL_END();
+#define IP_ISR_PROTECTED_CALL() for(char __ToDo = IP_ISR_PROTECTED_CALL_START(); __ToDo;  __ToDo = IP_ISR_PROTECTED_CALL_END())
+extern void IP_main(void);
+#endif
+#endif
 
-#endif
-#endif
+#endif  /* USEARDUINO */
 #endif	/* AJKSTACK_H */

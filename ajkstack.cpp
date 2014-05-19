@@ -29,6 +29,8 @@
 #define OP_DNS_LOOKUP   0x0D
 #define OP_BINDCOUNT    0x0E
 
+#ifdef XMEM_MULTIPLE_APP
+
 static memory_stream to_ipstack_task;
 static memory_stream from_ipstack_task;
 
@@ -109,6 +111,7 @@ typedef struct {
         uint8_t ip[4];
         uint8_t name;
 } __attribute__((packed)) op_dns_lookup_reply;
+#endif /* XMEM_MULTIPLE_APP */
 
 extern "C" {
         volatile uint8_t network_booted = 0;
@@ -146,7 +149,7 @@ extern "C" {
         }
 
         void TCPIPBegin(void) {
-                initnetwork(0, NULL);
+                if(!network_booted) initnetwork(0, NULL);
                 network_booted = 1;
         }
 
@@ -155,9 +158,10 @@ extern "C" {
         ///////////////////////////////////////////////////////////////////////////////
 
         int listen(int sockfd, int backlog) {
+                int rv;
+#ifdef XMEM_MULTIPLE_APP
                 op_fd_int *message = (op_fd_int *)xmem::safe_malloc(sizeof (op_fd_int));
                 int *reply;
-                int rv;
                 message->op = OP_LISTEN;
                 message->fd = sockfd;
                 message->intarg = backlog;
@@ -166,13 +170,20 @@ extern "C" {
                 xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
                 rv = *reply;
                 free(reply);
+#else /* XMEM_MULTIPLE_APP */
+
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_listen(sockfd, backlog);
+                }
+#endif /* XMEM_MULTIPLE_APP */
                 return rv;
         }
 
         int socket(int domain, int type, int protocol) {
+                int rv;
+#ifdef XMEM_MULTIPLE_APP
                 op_socket *message = (op_socket *)xmem::safe_malloc(sizeof (op_socket));
                 int *reply;
-                int rv;
                 message->op = OP_SOCKET;
                 message->domain = domain;
                 message->type = type;
@@ -182,56 +193,21 @@ extern "C" {
                 xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
                 rv = *reply;
                 free(reply);
-                return rv;
-        }
+#else /* XMEM_MULTIPLE_APP */
 
-        int socket_close(int sockfd) {
-                op_fd_only *message = (op_fd_only *)xmem::safe_malloc(sizeof (op_fd_only));
-                int *reply;
-                int rv;
-                message->op = OP_CLOSE;
-                message->fd = sockfd;
-                xmem::memory_send((uint8_t*)message, sizeof (op_fd_only), &to_ipstack_task);
-                free(message);
-                xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
-                rv = *reply;
-                free(reply);
-                return rv;
-        }
-
-        int accept_ready(int sockfd) {
-                op_fd_only *message = (op_fd_only *)xmem::safe_malloc(sizeof (op_fd_only));
-                int *reply;
-                int rv;
-                message->op = OP_READY;
-                message->fd = sockfd;
-                xmem::memory_send((uint8_t*)message, sizeof (op_fd_only), &to_ipstack_task);
-                free(message);
-                xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
-                rv = *reply;
-                free(reply);
-                return rv;
-        }
-
-        int bindcount(int sockfd) {
-                op_fd_only *message = (op_fd_only *)xmem::safe_malloc(sizeof (op_fd_only));
-                int *reply;
-                int rv;
-                message->op = OP_BINDCOUNT;
-                message->fd = sockfd;
-                xmem::memory_send((uint8_t*)message, sizeof (op_fd_only), &to_ipstack_task);
-                free(message);
-                xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
-                rv = *reply;
-                free(reply);
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_socket(domain, type, protocol);
+                }
+#endif /* XMEM_MULTIPLE_APP */
                 return rv;
         }
 
         int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
+                int rv;
+#ifdef XMEM_MULTIPLE_APP
                 // addrlen is not used
                 op_fd_only *message = (op_fd_only *)xmem::safe_malloc(sizeof (op_fd_only));
                 accept_reply *reply;
-                int rv;
                 message->op = OP_ACCEPT;
                 message->fd = sockfd;
                 xmem::memory_send((uint8_t*)message, sizeof (op_fd_only), &to_ipstack_task);
@@ -240,14 +216,21 @@ extern "C" {
                 rv = reply->rv;
                 memcpy(addr, &reply->addr, sizeof (struct sockaddr));
                 free(reply);
+#else /* XMEM_MULTIPLE_APP */
+
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_accept(sockfd, (sockaddr_in *)addr, 0);
+                }
+#endif /* XMEM_MULTIPLE_APP */
                 return rv;
         }
 
         int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+                int rv;
+#ifdef XMEM_MULTIPLE_APP
                 // addrlen is not used
                 op_socket_bc *message = (op_socket_bc *)xmem::safe_malloc(sizeof (op_socket_bc));
                 int *reply;
-                int rv;
                 message->op = OP_BIND;
                 message->fd = sockfd;
                 memcpy(&message->addr, addr, sizeof (struct sockaddr));
@@ -256,14 +239,21 @@ extern "C" {
                 xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
                 rv = *reply;
                 free(reply);
+#else /* XMEM_MULTIPLE_APP */
+
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_bind(sockfd, (sockaddr_in *)addr, 0);
+                }
+#endif /* XMEM_MULTIPLE_APP */
                 return rv;
         }
 
         int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+                int rv;
+#ifdef XMEM_MULTIPLE_APP
                 // addrlen is not used
                 op_socket_bc *message = (op_socket_bc *)xmem::safe_malloc(sizeof (op_socket_bc));
                 int *reply;
-                int rv;
                 message->op = OP_CONNECT;
                 message->fd = sockfd;
                 memcpy(&message->addr, addr, sizeof (struct sockaddr));
@@ -272,12 +262,19 @@ extern "C" {
                 xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
                 rv = *reply;
                 free(reply);
+#else /* XMEM_MULTIPLE_APP */
+
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_connect(sockfd, (sockaddr_in *)addr, 0);
+                }
+#endif /* XMEM_MULTIPLE_APP */
                 return rv;
         }
 
         int socket_read(int fd, void *buf, size_t count) {
-                op_socket_read_reply *reply;
                 int rv;
+#ifdef XMEM_MULTIPLE_APP
+                op_socket_read_reply *reply;
                 op_socket_read *message = (op_socket_read *)xmem::safe_malloc(sizeof (op_socket_read));
                 message->op = OP_READ;
                 message->fd = fd;
@@ -290,28 +287,18 @@ extern "C" {
                         memcpy(buf, &reply->buf_beginning, rv);
                 }
                 free(reply);
-                return rv;
+#else /* XMEM_MULTIPLE_APP */
 
-        }
-
-        int socket_write(int fd, const void *buf, size_t count) {
-                int *reply;
-                int rv;
-                op_socket_write *message = (op_socket_write *)xmem::safe_malloc(sizeof (op_socket_write) + count);
-                message->op = OP_WRITE;
-                message->fd = fd;
-                message->count = count;
-                memcpy(&message->buf_beginning, buf, count);
-                xmem::memory_send((uint8_t*)message, sizeof (op_socket_write) + count, &to_ipstack_task);
-                free(message);
-                xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
-                rv = *reply;
-                free(reply);
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_sockread(fd, buf, count);
+                }
+#endif /* XMEM_MULTIPLE_APP */
                 return rv;
         }
 
         int recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *src_addr, socklen_t *addrlen) {
                 int rv;
+#ifdef XMEM_MULTIPLE_APP
                 op_recv_reply *reply;
                 op_recv *message = (op_recv *)(op_recv *)xmem::safe_malloc(sizeof (op_recv));
                 message->op = OP_RECV;
@@ -326,12 +313,42 @@ extern "C" {
                         memcpy(buf, &reply->buf, rv);
                 }
                 free(reply);
+#else /* XMEM_MULTIPLE_APP */
+
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_recvfrom(sockfd, buf, len, 0, src_addr, 0);
+                }
+#endif /* XMEM_MULTIPLE_APP */
+                return rv;
+        }
+
+        int socket_write(int fd, const void *buf, size_t count) {
+                int rv;
+#ifdef XMEM_MULTIPLE_APP
+                int *reply;
+                op_socket_write *message = (op_socket_write *)xmem::safe_malloc(sizeof (op_socket_write) + count);
+                message->op = OP_WRITE;
+                message->fd = fd;
+                message->count = count;
+                memcpy(&message->buf_beginning, buf, count);
+                xmem::memory_send((uint8_t*)message, sizeof (op_socket_write) + count, &to_ipstack_task);
+                free(message);
+                xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
+                rv = *reply;
+                free(reply);
+#else /* XMEM_MULTIPLE_APP */
+
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_sockwrite(fd, (void *)buf, count);
+                }
+#endif /* XMEM_MULTIPLE_APP */
                 return rv;
         }
 
         int sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen) {
-                int *reply;
                 int rv;
+#ifdef XMEM_MULTIPLE_APP
+                int *reply;
                 op_send *message = (op_send *)xmem::safe_malloc(sizeof (op_send) + len);
                 message->op = OP_SEND;
                 message->sockfd = sockfd;
@@ -342,13 +359,83 @@ extern "C" {
                 xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
                 rv = *reply;
                 free(reply);
+#else /* XMEM_MULTIPLE_APP */
+
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_sendto(sockfd, (void *)buf, len, 0, dest_addr, 0);
+                }
+#endif /* XMEM_MULTIPLE_APP */
+                return rv;
+        }
+
+        int accept_ready(int sockfd) {
+                int rv;
+#ifdef XMEM_MULTIPLE_APP
+                op_fd_only *message = (op_fd_only *)xmem::safe_malloc(sizeof (op_fd_only));
+                int *reply;
+                message->op = OP_READY;
+                message->fd = sockfd;
+                xmem::memory_send((uint8_t*)message, sizeof (op_fd_only), &to_ipstack_task);
+                free(message);
+                xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
+                rv = *reply;
+                free(reply);
+#else /* XMEM_MULTIPLE_APP */
+
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_acceptready(sockfd);
+                }
+#endif /* XMEM_MULTIPLE_APP */
+                return rv;
+        }
+
+        int bindcount(int sockfd) {
+                int rv;
+#ifdef XMEM_MULTIPLE_APP
+                op_fd_only *message = (op_fd_only *)xmem::safe_malloc(sizeof (op_fd_only));
+                int *reply;
+                message->op = OP_BINDCOUNT;
+                message->fd = sockfd;
+                xmem::memory_send((uint8_t*)message, sizeof (op_fd_only), &to_ipstack_task);
+                free(message);
+                xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
+                rv = *reply;
+                free(reply);
+#else /* XMEM_MULTIPLE_APP */
+
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_bindcount(sockfd);
+                }
+#endif /* XMEM_MULTIPLE_APP */
+                return rv;
+        }
+
+        int socket_close(int sockfd) {
+                int rv;
+#ifdef XMEM_MULTIPLE_APP
+                op_fd_only *message = (op_fd_only *)xmem::safe_malloc(sizeof (op_fd_only));
+                int *reply;
+                message->op = OP_CLOSE;
+                message->fd = sockfd;
+                xmem::memory_send((uint8_t*)message, sizeof (op_fd_only), &to_ipstack_task);
+                free(message);
+                xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
+                rv = *reply;
+                free(reply);
+#else /* XMEM_MULTIPLE_APP */
+
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_sockclose(sockfd);
+                }
+#endif /* XMEM_MULTIPLE_APP */
                 return rv;
         }
 
         int socket_select(int sockfd, int rw) {
+                int rv;
+#ifdef XMEM_MULTIPLE_APP
                 op_fd_int *message = (op_fd_int *)xmem::safe_malloc(sizeof (op_fd_int));
                 int *reply;
-                int rv;
                 message->op = OP_SELECT;
                 message->fd = sockfd;
                 message->intarg = rw;
@@ -357,11 +444,18 @@ extern "C" {
                 xmem::memory_recv((uint8_t**)(&reply), &from_ipstack_task);
                 rv = *reply;
                 free(reply);
+#else /* XMEM_MULTIPLE_APP */
+
+                IP_ISR_PROTECTED_CALL() {
+                        rv = AJK_sockdepth(sockfd, rw);
+                }
+#endif /* XMEM_MULTIPLE_APP */
                 return rv;
         }
 
         int resolve(const void *name, struct u_nameip *buf) {
                 int rv;
+#ifdef XMEM_MULTIPLE_APP
                 op_dns_lookup_reply *reply;
                 op_dns_lookup *message = (op_dns_lookup *)xmem::safe_malloc(sizeof (op_dns_lookup) + strlen((char *)name));
                 message->op = OP_DNS_LOOKUP;
@@ -377,11 +471,30 @@ extern "C" {
                         strcpy((char *)buf->hostname, (char *)&(reply->name));
                 }
                 free(reply);
+#else /* XMEM_MULTIPLE_APP */
+
+                IP_ISR_PROTECTED_CALL() {
+                        rv = -1;
+                        struct u_nameip *nip = NULL;
+                        nip = gethostandip((const char*)name);
+                        if(nip) {
+                                rv = 0;
+                                buf->hostip = (unsigned char *)malloc(4);
+                                buf->hostname = (char *)malloc(1 + strlen((char *)nip->hostname));
+                                memcpy(buf->hostip, nip->hostip, 4);
+                                strcpy(buf->hostname, nip->hostname);
+                                free(nip->hostip);
+                                free(nip->hostname);
+                                free(nip);
+                        }
+                }
+#endif /* XMEM_MULTIPLE_APP */
                 return rv;
         }
 }
 
 void IP_task(void) {
+#ifdef XMEM_MULTIPLE_APP
         uint8_t *message;
         uint8_t *reply;
         struct u_nameip *nip;
@@ -477,6 +590,37 @@ void IP_task(void) {
                                 free(reply);
                         }
                 } else xmem::Yield();
+        }
+#else /* XMEM_MULTIPLE_APP */
+
+        IP_ISR_PROTECTED_CALL() {
+                MAKEMEBLEED();
+        }
+}
+
+#if defined(__arm__) && defined(CORE_TEENSY)
+// 1mS = 1000uS
+#define IP_TASK_INTERVAL 500
+static IntervalTimer IP_timed_isr;
+
+uint8_t IP_ISR_PROTECTED_CALL_START() {
+        IP_timed_isr.end();
+        return 1;
+}
+
+uint8_t IP_ISR_PROTECTED_CALL_END() {
+        IP_timed_isr.begin(IP_task, IP_TASK_INTERVAL);
+        return 0;
+#else
+#error Do not know how to operate
+#endif
+#endif /* XMEM_MULTIPLE_APP */
+}
+
+void IP_main(void) {
+
+        IP_ISR_PROTECTED_CALL() {
+                TCPIPBegin();
         }
 }
 
