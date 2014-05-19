@@ -1,11 +1,21 @@
 #
-# These are set for a teensy++ 2.0 + quadram.
+# These are set for a mega 1280 + quadram plus my serial patch.
+# If you lack quadram, or want to disable LFN, just change _FS_TINY=1 _USE_LFN=0
+#
+# If your board is a mega 2560 uncomment the following two lines
 #BOARD = mega2560
+#PROGRAMMER = wiring
+# ...and then comment out the following two lines
 #BOARD = mega
-BOARD = teensypp2
+#PROGRAMMER = arduino
 
-# set your tty port here
+#BOARD = teensypp2
+BOARD = teensy31
+
+# set your Arduino programming port here Note this is NOT the console port!
 PORT = /dev/ttyACM0
+
+EXTRA_FLAGS += -D CONSOLE=1
 
 EXTRA_FLAGS = -D _USE_LFN=3
 
@@ -19,9 +29,13 @@ EXTRA_FLAGS += -D _MAX_SS=512
 # Don't worry if you don't have external RAM, xmem2 detects this situation.
 # You *WILL* be wanting to get some kind of external ram on your mega in order to
 # do anything that is intense.
+ifneq "$(BOARD)" "teensy31"
+ifneq "$(BOARD)" "teensy3"
 EXTRA_FLAGS += -D EXT_RAM_STACK=1
 EXTRA_FLAGS += -D EXT_RAM_HEAP=1
 EXTRA_FLAGS += -D USE_MULTIPLE_APP_API=16
+endif
+endif
 
 EXTRA_FLAGS += -D USB_HOST_SERIAL=Serial1
 EXTRA_FLAGS += -D USB_HOST_SERIAL_NUM=1 
