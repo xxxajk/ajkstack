@@ -9,16 +9,15 @@
 #BOARD = mega
 #PROGRAMMER = arduino
 
-BOARD = teensypp2
+#BOARD = teensypp2
+BOARD = teensy31
+F_CPU = 96000000
+#F_CPU = 144000000
 
 # set your Arduino tty port here
 PORT = /dev/ttyACM0
 
 EXTRA_FLAGS = -D _USE_LFN=3
-
-# change to 0 if you have quadram to take advantage of caching FAT
-EXTRA_FLAGS += -D _FS_TINY=1
-
 
 EXTRA_FLAGS += -D _MAX_SS=512
 
@@ -31,11 +30,16 @@ ifneq "$(BOARD)" "teensy3"
 EXTRA_FLAGS += -D EXT_RAM_STACK=1
 EXTRA_FLAGS += -D EXT_RAM_HEAP=1
 EXTRA_FLAGS += -D USE_MULTIPLE_APP_API=16
+EXTRA_FLAGS += -D _FS_TINY=0
+else
+EXTRA_FLAGS += -D _FS_TINY=1
 endif
+else
+EXTRA_FLAGS += -D _FS_TINY=0
 endif
 
 EXTRA_FLAGS += -D USB_HOST_SERIAL=Serial1
-EXTRA_FLAGS += -D USB_HOST_SERIAL_NUM=1 
+EXTRA_FLAGS += -D USB_HOST_SERIAL_NUM=1
 EXTRA_FLAGS += -D SLIPDEV=Serial
 EXTRA_FLAGS += -D CONSOLE=1
 EXTRA_FLAGS += -D CONSOLE_BAUD_RATE=115200

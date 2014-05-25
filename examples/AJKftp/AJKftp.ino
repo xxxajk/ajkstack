@@ -10,8 +10,12 @@
 #include <Wire.h>
 #include <SPI.h>
 
+#if defined(CORE_TEENSY) && defined(__arm__)
+#include <spi4teensy3.h>
+#else
 #ifndef USE_MULTIPLE_APP_API
 #define USE_MULTIPLE_APP_API 16
+#endif
 #endif
 
 #include <xmem.h>
@@ -59,6 +63,8 @@ void restoreline(int kbptr) {
         memset(clibuf, 0, 40);
         strncat(clibuf, (char *)&keyboard[add], 38);
         printf("\r%s", clibuf);
+        fflush(stdout);
+
 }
 
 
@@ -134,173 +140,7 @@ int xyz;
 #define BIGGEST 320
 #endif
 
-#ifdef CPM
-static char tempfile[] = "0:A:D.$";
-
-#if !NANO
-
-/*
-        CP/M makes us work hard.
-        According to my manuals, you need to restart
-        directory listings between file accesses.
-        This may or maynot be true for some versions,
-        so this routine makes absolutly certain we don't
-        end up with any problems.
- */
-int locate(spec, dma, pos)
-char * spec;
-char * dma;
-int pos;
-{
-        struct fcb * fc;
-        int j;
-        int first;
-
-        first = j = 0;
-        bdos(CPMSDMA, dma); /* set DMA */
-        pos++;
-        fc = (struct fcb *)netaddress;
-        setfcb(fc, spec);
-        /* walking dirs is slow and sucks! */
-        while((j != -1) && (pos > 0)) {
-                pos--;
-                j = bdos((!first) ? CPMFFST : CPMFNXT, fc);
-                first = 1;
-        }
-        return (j);
-}
-#endif
-
-#else
 static char tempfile[] = "DATA.FTP";
-#endif
-
-#if NANO
-
-#else
-#ifdef CPM
-
-/*
-        Change directory (change default work user/disk)
-        broken, fixme.
- */
-void lcd(dir)
-char *dir;
-{
-        struct fcb * fc;
-        int un;
-        int dl;
-
-        dl = bdos(CPMIDRV, 0) + 'A';
-
-        fc = (struct fcb *)netaddress;
-        if(!setfcb(fc, dir)) {
-                un = fc->uid;
-                if(fc->dr) dl = fc->dr;
-
-                bdos(CPMLGIN, dl);
-                bdos(CPMSUID, un);
-        }
-        /* print the currently logged drive */
-        un = bdos(CPMSUID, 0xff);
-        dl = bdos(CPMIDRV, 0) + 'A';
-        printf("Work drive %i:%c:\n", un, dl);
-}
-
-/*
-
-Might as well reuse our own mallocs,
-altho we COULD steal the system FCB/buffer...
-
-Make certain you have enough disk space to hold the text of the listing.
-A full floppy will cause this to bail!
-
-I should probably make the drive/user assignable within the prompt system.
-
- */
-
-void stri(p, it)
-FILE * p;
-char it;
-{
-        register int cf;
-
-        cf = (int)(it & 0x7f);
-        if(cf != 32) fprintf(p, "%c", cf);
-}
-
-int dodir(name, f)
-char * name;
-FILE * f;
-{
-        struct fcb *fc;
-        char *mf;
-        char *nptr;
-        int i;
-        int a;
-        int b;
-        int j;
-        int cf;
-        int dl;
-        int un;
-
-        nptr = xferdata;
-        sprintf(xferdata, "*.*");
-        un = bdos(CPMSUID, 0xff);
-        fc = (struct fcb *)iodata;
-        if(((name[1] == ':') && (strlen(name) < 3)) || ((name[3] == ':') && (strlen(name) < 5))) {
-                sprintf(xferdata, "%s*.*", name);
-        } else {
-                if(strlen(name)) {
-                        nptr = name;
-                }
-        }
-        dl = 0;
-        j = -1;
-        if(!f) {
-                printf("\nDirectory of %s\n", nptr);
-                f = stdout;
-        }
-        if(!setfcb(fc, nptr)) {
-                /* we won't support non disk */
-                if(fc->dr) dl = fc->dr + '@';
-                i = a = b = j = 0;
-                while(i != -1) {
-                        i = locate(nptr, cmdo, a);
-                        if(i != -1) {
-                                mf = cmdo + (i * 32);
-                                if(((mf[1] & 0x7f) == 'D') && ((mf[2] &0x7f) == ' ') && ((mf[9] & 0x7f) == '$') && ((mf[10] &0x7f) == ' ')) {
-                                        a++;
-                                } else {
-                                        b++;
-                                        a++;
-                                        if(dl) {
-                                                cf = mf[0] & 0x3f;
-                                                fprintf(f, "%d:%c:", cf, dl);
-                                        }
-                                        for(j = 1; j < 9; j++) {
-                                                stri(f, mf[j]);
-                                        }
-                                        cf = mf[j] & 0x7f;
-                                        if(cf != 32) {
-                                                fprintf(f, ".");
-                                        }
-                                        for(; j < 12; j++) {
-                                                stri(f, mf[j]);
-                                        }
-                                        fprintf(f, "\n");
-                                }
-                        }
-                }
-        }
-        printf("%i Files\n", b);
-        return (j);
-}
-#define DODIR 1
-#endif /* CPM */
-
-#endif /* NANO */
-
 
 #ifdef DODIR
 #define DIRPRESENT 1
@@ -1084,7 +924,11 @@ void cli_sim(void) {
         int stat;
         int kbptr;
         /* set up wanted irc data globals :-) */
-        while(!network_booted) xmem::Yield(); // wait for networking to be ready.
+        while(!network_booted)
+#ifdef XMEM_MULTIPLE_APP
+                xmem::Yield()
+#endif
+                ; // wait for networking to be ready.
         for(;;) {
                 printf("\r\nEnter command line now.\r\n");
                 memset(keyboard, 0, 1023);
@@ -1134,6 +978,9 @@ void start_system(void) {
         fancy[3] = '/';
         printf_P(PSTR("\nStart SLIP on your server now!\007"));
         printf_P(PSTR("\nWaiting for '/' to mount..."));
+#ifndef XMEM_MULTIPLE_APP
+        USB_main();
+#endif
         while(fd == _VOLUMES) {
                 slots = fs_mountcount();
                 if(slots != last) {
@@ -1153,13 +1000,22 @@ void start_system(void) {
                 }
                 printf_P(PSTR(" \b%c\b"), fancy[spin]);
                 spin = (1 + spin) % 4;
+#ifdef XMEM_MULTIPLE_APP
                 xmem::Sleep(100);
+#else
+                delay(100);
+#endif
         }
         printf_P(PSTR(" \b"));
         // File System is now ready. Initialize Networking
+#ifdef XMEM_MULTIPLE_APP
         // Start the ip task using a 3KB stack, 29KB malloc arena
-        uint8_t t1 = xmem::SetupTask(IP_task, 1024 * 3);
+        uint8_t t1 = xmem::SetupTask(IP_task, 1024*3);
         xmem::StartTask(t1);
+#else
+        IP_main();
+        cli_sim(); // never returns
+#endif
 }
 
 void setup(void) {
@@ -1171,12 +1027,19 @@ void setup(void) {
                 Calls[c] = NULL;
         }
         USB_Setup(Calls);
+
+#ifdef XMEM_MULTIPLE_APP
         uint8_t t1 = xmem::SetupTask(start_system);
         xmem::StartTask(t1);
         uint8_t t2 = xmem::SetupTask(cli_sim);
         xmem::StartTask(t2);
+#endif
 }
 
 void loop(void) {
+#ifdef XMEM_MULTIPLE_APP
         xmem::Yield(); // Don't hog, we are not used anyway.
+#else
+        start_system(); // Never returns
+#endif
 }

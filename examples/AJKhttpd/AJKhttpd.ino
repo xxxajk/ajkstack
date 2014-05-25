@@ -5,8 +5,12 @@
 #include <Wire.h>
 #include <SPI.h>
 
+#if defined(CORE_TEENSY) && defined(__arm__)
+#include <spi4teensy3.h>
+#else
 #ifndef USE_MULTIPLE_APP_API
 #define USE_MULTIPLE_APP_API 16
+#endif
 #endif
 
 #include <xmem.h>
@@ -683,8 +687,12 @@ void server(VOIDFIX) {
 void httpd(void) {
 
         int i;
-        output = (char *)xmem::safe_malloc(MAXDATA);
-        while(!network_booted) xmem::Yield(); // wait for networking to be ready.
+        output = (char *)safemalloc(MAXDATA);
+        while(!network_booted)
+#ifdef XMEM_MULTIPLE_APP
+                xmem::Yield()
+#endif
+                ; // wait for networking to be ready.
 
         srv_addy.sin_port = 80; /* echo port */
         sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -739,6 +747,9 @@ void start_system(void) {
         fancy[3] = '/';
         printf_P(PSTR("\nStart SLIP on your server now!\007"));
         printf_P(PSTR("\nWaiting for '/' to mount..."));
+#ifndef XMEM_MULTIPLE_APP
+        USB_main();
+#endif
         while(fd == _VOLUMES) {
                 slots = fs_mountcount();
                 if(slots != last) {
@@ -758,13 +769,22 @@ void start_system(void) {
                 }
                 printf_P(PSTR(" \b%c\b"), fancy[spin]);
                 spin = (1 + spin) % 4;
+#ifdef XMEM_MULTIPLE_APP
                 xmem::Sleep(100);
+#else
+                delay(100);
+#endif
         }
         printf_P(PSTR(" \b"));
         // File System is now ready. Initialize Networking
+#ifdef XMEM_MULTIPLE_APP
         // Start the ip task using a 3KB stack, 29KB malloc arena
-        uint8_t t1 = xmem::SetupTask(IP_task, 1024 * 3);
+        uint8_t t1 = xmem::SetupTask(IP_task, 1024*3);
         xmem::StartTask(t1);
+#else
+        IP_main();
+        httpd(); // never returns
+#endif
 }
 
 void setup(void) {
@@ -776,12 +796,19 @@ void setup(void) {
                 Calls[c] = NULL;
         }
         USB_Setup(Calls);
+
+#ifdef XMEM_MULTIPLE_APP
         uint8_t t1 = xmem::SetupTask(start_system);
         xmem::StartTask(t1);
         uint8_t t2 = xmem::SetupTask(httpd);
         xmem::StartTask(t2);
+#endif
 }
 
 void loop(void) {
+#ifdef XMEM_MULTIPLE_APP
         xmem::Yield(); // Don't hog, we are not used anyway.
+#else
+        start_system(); // Never returns
+#endif
 }
